@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ generated_quiz.title|default:"Сгенерированный тест" }}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <style>
+        body {
+            min-height: 100vh;
+            background: #f4f7fb;
+            color: #172033;
+        }
+
+        .page-shell {
+            padding: 40px 0;
+        }
+
+        .topbar,
+        .question-card {
+            background: #ffffff;
+            border: 1px solid #d8e0ea;
+            border-radius: 8px;
+            box-shadow: 0 12px 26px rgba(23, 32, 51, 0.07);
+        }
+
+        .topbar {
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .question-card {
+            padding: 22px;
+            margin-bottom: 16px;
+        }
+
+        .timer {
+            display: inline-flex;
+            align-items: center;
+            min-height: 44px;
+            border-radius: 8px;
+            background: #172033;
+            color: #ffffff;
+            font-weight: 700;
+            padding: 0 14px;
+        }
+
+        .option {
+            display: block;
+            border: 1px solid #d8e0ea;
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .option:hover {
+            border-color: #4f76ff;
+        }
+
+        .option input {
+            margin-right: 10px;
+        }
+
+        .btn {
+            border-radius: 8px;
+            min-height: 46px;
+        }
+    </style>
+</head>
+<body>
+    <main class="page-shell">
+        <div class="container">
+            {% if error_message %}
+                <div class="alert alert-warning">
+                    {{ error_message }} <a href="{% url 'home' %}" class="alert-link">Вернуться к загрузке</a>.
+                </div>
+            {% else %}
+                <section class="topbar">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between">
+                        <div class="mr-3 mb-3 mb-md-0">
+                            <h1 class="h2 font-weight-bold mb-2">{{ generated_quiz.title }}</h1>
+                            {% if uploaded_filename %}
+                                <p class="text-muted mb-0">Исходный файл: {{ uploaded_filename }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="timer">Осталось времени: <span id="timer" class="ml-2">00:00</span></div>
+                    </div>
+                </section>
+
+                <form id="quizForm" method="POST" action="{% url 'submit_quiz' %}">
+                    {% csrf_token %}
+                    {% for question in generated_quiz.questions %}
+                        <section class="question-card">
+                            <h2 class="h5 font-weight-bold mb-3">{{ forloop.counter }}. {{ question.question }}</h2>
+                            {% for option in question.options %}
+                                <label class="option">
+                                    <input type="radio" name="question_{{ forloop.parentloop.counter0 }}" value="{{ forloop.counter0 }}">
+                                    <span>{{ option }}</span>
+                                </label>
+                            {% endfor %}
+                        </section>
+                    {% endfor %}
+
+                    <div class="d-flex flex-wrap align-items-center">
+                        <button type="submit" class="btn btn-primary font-weight-bold px-4 mr-3 mb-2">Отправить ответы</button>
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary px-4 mb-2">Загрузить другой файл</a>
+                    </div>
+                </form>
+            {% endif %}
+        </div>
+    </main>
+
+    {% if generated_quiz %}
+        <script>
+            let timeLeft = Number("{{ time_limit|default:120 }}");
+            let submitted = false;
+            const timerElement = document.getElementById("timer");
+            const quizForm = document.getElementById("quizForm");
+
+            function updateTimerDisplay(secondsLeft) {
+                const minutes = Math.floor(secondsLeft / 60);
+                const seconds = secondsLeft % 60;
+                timerElement.textContent = String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
+            }
+
+            quizForm.addEventListener("submit", function () {
+                submitted = true;
+            });
+
+            updateTimerDisplay(timeLeft);
+            const countdown = setInterval(function () {
+                if (submitted) {
+                    clearInterval(countdown);
+                    return;
+                }
+
+                timeLeft -= 1;
+                updateTimerDisplay(Math.max(timeLeft, 0));
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    submitted = true;
+                    quizForm.submit();
+                }
+            }, 1000);
+        </script>
+    {% endif %}
+</body>
+</html>

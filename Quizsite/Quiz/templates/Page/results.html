@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Результаты теста</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <style>
+        body {
+            min-height: 100vh;
+            background: #f4f7fb;
+            color: #172033;
+        }
+
+        .page-shell {
+            padding: 40px 0;
+        }
+
+        .summary,
+        .result-card {
+            background: #ffffff;
+            border: 1px solid #d8e0ea;
+            border-radius: 8px;
+            box-shadow: 0 12px 26px rgba(23, 32, 51, 0.07);
+        }
+
+        .summary {
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .result-card {
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .result-card.correct {
+            border-left: 6px solid #16803c;
+        }
+
+        .result-card.incorrect {
+            border-left: 6px solid #c52a2a;
+        }
+
+        .score {
+            color: #172033;
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        .btn {
+            border-radius: 8px;
+            min-height: 46px;
+        }
+    </style>
+</head>
+<body>
+    <main class="page-shell">
+        <div class="container">
+            <section class="summary">
+                <h1 class="h2 font-weight-bold mb-2">{{ generated_quiz.title }}</h1>
+                {% if uploaded_filename %}
+                    <p class="text-muted mb-2">Исходный файл: {{ uploaded_filename }}</p>
+                {% endif %}
+                <p class="score mb-3">Результат: {{ score }} / {{ total }}</p>
+                <a href="{% url 'Quiz1' %}" class="btn btn-outline-primary mr-2 mb-2">Пройти текущий тест заново</a>
+                <a href="{% url 'home' %}" class="btn btn-primary mb-2">Создать другой тест</a>
+            </section>
+
+            {% for result in results %}
+                <section class="result-card {% if result.is_correct %}correct{% else %}incorrect{% endif %}">
+                    <h2 class="h5 font-weight-bold">{{ result.number }}. {{ result.question }}</h2>
+                    {% if result.is_correct %}
+                        <p class="text-success font-weight-bold mb-2">Верно</p>
+                    {% else %}
+                        <p class="text-danger font-weight-bold mb-2">Неверно</p>
+                    {% endif %}
+
+                    {% if result.selected_answer %}
+                        <p class="mb-1"><strong>Ваш ответ:</strong> {{ result.selected_answer }}</p>
+                    {% else %}
+                        <p class="mb-1"><strong>Ваш ответ:</strong> Нет ответа</p>
+                    {% endif %}
+                    <p class="mb-0"><strong>Правильный ответ:</strong> {{ result.correct_answer }}</p>
+                </section>
+            {% endfor %}
+        </div>
+    </main>
+</body>
+</html>
