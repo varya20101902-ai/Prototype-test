@@ -37,7 +37,7 @@ SECRET_KEY = 'django-insecure-f0a-kv4l90^35t6ldm9a44-ej1ao5w+22o!qmsw2f0n3m@=(8l
 # Важно: не включайте DEBUG в продакшене.
 DEBUG = True
 
-ALLOWED_HOSTS = ['prototype-test-aowp.onrender.com']
+ALLOWED_HOSTS = ['prototype-test-aowp.onrender.com', 'localhost', '127.0.0.1']
 
 
 # Приложения проекта
